@@ -1,0 +1,60 @@
+{
+  "name": "digital-signal-processing-exercises",
+  "version": "1.0.0",
+  "description": "Live bitcoin fluency with fourier transform, websocket",
+  "repository": "git@github.com:duyvu871/btl-xlths.git",
+  "main": "server.js",
+  "keywords": [
+    "Socket",
+    "Fourier",
+    "Transform"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "author": "BUIANDU",
+  "license": "ISC",
+  "scripts": {
+    "dev": "set NODE_ENV=development&&set PORT=3001&&npm run build&&node dist/src/server.js",
+    "build": "tsc && tsc-alias",
+    "addon:build": "node-gyp rebuild",
+    "addon:build:prod": "node-gyp rebuild --gypfile=binding.prod.gyp",
+    "prod": "NODE_ENV=production && node ./dist/server.js"
+  },
+  "gypfile": true,
+  "dependencies": {
+    "axios": "^1.7.7",
+    "bcrypt": "^5.1.1",
+    "bindings": "^1.5.0",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "express-validator": "^6.4.0",
+    "ioredis": "^5.4.1",
+    "jsonwebtoken": "^9.0.2",
+    "jwt-decode": "^2.2.0",
+    "lodash": "^4.17.21",
+    "node-addon-api": "^8.1.0",
+    "node-calls-python": "^1.10.1",
+    "node-cron": "^3.0.3",
+    "socket.io": "^4.8.0",
+    "ts-node-dev": "^1.1.8",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/body-parser": "^1.19.0",
+    "@types/cors": "^2.8.6",
+    "@types/crypto-js": "^3.1.44",
+    "@types/express": "^4.17.6",
+    "@types/ioredis": "^5.0.0",
+    "@types/jsonwebtoken": "^8.3.9",
+    "@types/jwt-decode": "^2.2.1",
+    "@types/node-cron": "^3.0.11",
+    "@types/socket.io": "^2.1.4",
+    "@types/uuid": "^10.0.0",
+    "tsc-alias": "^1.8.10",
+    "tsup": "^8.3.5",
+    "typescript": "^5.3.3"
+  }
+}

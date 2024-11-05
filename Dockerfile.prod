@@ -1,0 +1,34 @@
+FROM node:lts-alpine
+
+# Install build tools and dependencies (including FFTW)
+RUN apk add --no-cache build-base wget git autoconf automake libtool \
+    && wget http://www.fftw.org/fftw-3.3.10.tar.gz \
+    && tar -xzf fftw-3.3.10.tar.gz \
+    && cd fftw-3.3.10 \
+    && ./configure --enable-float --enable-shared --enable-threads \
+    && make \
+    && make install \
+    && cd .. \
+    && rm fftw-3.3.10.tar.gz fftw-3.3.10
+
+# Create App Directory
+WORKDIR /usr/src/app
+
+# Copy package.json and tsconfig.json
+COPY package*.json ./
+COPY tsconfig*.json ./
+
+# Install Node.js dependencies
+RUN npm ci
+
+# Copy source files
+COPY . .
+
+# Expose the port
+EXPOSE 8000
+
+# Build the application
+RUN npm run build
+
+# Set the command to run your app
+CMD ["npm", "run", "prod"]
