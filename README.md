@@ -1,152 +1,98 @@
-# WebSocket API with Express Typescript
-> A boilerplate to develop realtime and event-based API to perform **broadcasting** and **real-time data transfer** with Socket.io on Express written in TypeScript and Redis. 
 
-***
+# Hệ thống xử lý thời gian thực cho thuật toán làm mượt fourier transform với bitcoin
 
-Table Of Contents 
-=================
+Dự án này xây dựng một hệ thống xử lý thuật toán cho phép người dùng thực thi các thuật toán khác nhau và nhận kết quả. Hệ thống được xây dựng bằng Node.js, Express.js, Socket.IO và Redis.
 
-  * [About The Project](#about-the-project)
-    * [File Structure](#file-structure)
-  * [Motivation](#motivation)
-  * [Technical Discussion](#technical-discussion)
-  * [Limitation](#limitation)
-  * [Getting Started](#getting-started)
-    * [Installation](#installation)
-      * [Running in Development](#running-in-development)
-      * [Running in Production](#running-in-production)
-  * [Tools and Technologies](#tool-and-technologies)
-  * [About](#about)
-    * [Author](#author)
-    * [License](#license)
+## Các chức năng chính
 
-***
+* **Giao diện người dùng (UI):** Cung cấp giao diện web để người dùng tương tác với hệ thống.
+* **Kết nối thời gian thực (Real-time communication):** Sử dụng Socket.IO để cập nhật trạng thái xử lý và kết quả cho người dùng.
+* **Lưu trữ dữ liệu tạm thời (Caching):** Sử dụng Redis để lưu trữ dữ liệu tạm thời.
 
-About The Project
-=================
-The project focus on implementation of Socket.io Server's library features to develop an **independent, maintainable and deployable** bidirectional communication microservices secured with OAuth 2.0 authorization protocol. The services **provide backend APIs** for other services from different projects to emit or broadcast their data to the mentioned clients and **allow desktop browser, mobile browser or native mobile application to listen on the socket** to receive the emitted data based on events or connection. 
+## Cấu trúc thư mục
 
-File structure
------------------
+```text
+    src/
+    ├── @types/              => Các kiểu dữ liệu tùy chỉnh cho TypeScript
+    ├── api/                 => API WebSocket với kiến trúc ba lớp
+    |   ├── controllers/        => Lớp trình bày, nhận đầu vào và cung cấp đầu ra
+    |   ├── middlewares/        => Lọc yêu cầu HTTP trước khi vào controllers
+    |   ├── models/             => Lớp dữ liệu: mongoose
+    |   ├── services/           => Lớp nghiệp vụ với logic nghiệp vụ
+    |   ├── validations/        => Các quy tắc được xác định rõ ràng cho đầu vào được cung cấp
+    |   ├── routes.ts           => Định tuyến yêu cầu đến các controllers tương ứng
+    ├── common/              => Tài nguyên được chia sẻ giữa các dự án
+    |   ├── interfaces/         => Định nghĩa đặc tả của các kiểu hoặc thực thể
+    |   ├── config.ts           => Cấu hình môi trường với .env (dotenv)
+    |   ├── constants.ts        => Enums (kiểu liệt kê)
+    |   ├── types.ts            => Kiểu dữ liệu
+    ├── loaders/             => Khởi động với Inversion of Control (Đảo ngược điều khiển)
+    |   ├── ExpressServer.ts    => Khởi động cấu hình máy chủ Express
+    |   ├── index.js            => Khởi động Express, Redis và Socket.io
+    |   ├── RedisServer.ts      => Khởi động cấu hình máy chủ Redis
+    |   ├── SocketServer.ts     => Cấu hình máy chủ Socket
+    ├── responses/           => Trình xử lý lỗi tùy chỉnh cho phản hồi HTTP
+    |   ├── clientErrors/       => Mã lỗi từ 400 đến 499
+    |   ├── serverErrors/       => Mã lỗi 500 trở lên
+    |   ├── successful/         => Phản hồi thành công
+    |   ├── ErrorHandler.ts     => Middleware cho điểm trung tâm xử lý ngoại lệ
+    ├── utils/               => Tiện ích cho toàn bộ dự án
+    └── server.ts            => Điểm vào của Node để khởi động dự án
 
-```
-src/
-├── api/                 => websocket APIs with three-tiers architecture
-|   ├── controllers/        => presentation layer, accept input and provide outputs
-|   ├── middlewares/        => filter HTTP request before enter controllers
-|   ├── models/             => data layers: mongoose
-|   ├── services/           => business layers with business logics
-|   ├── validations/        => well-defined rules for provided inputs
-|   ├── routes.ts           => route the request to associated controllers
-├── common/              => resource shared among the projects
-|   ├── interfaces/         => define the specification of types or entity
-|   ├── config.ts           => environment configurations with .env (dotenv)
-|   ├── constants.ts        => enums
-|   ├── types.ts            => data types
-├── loaders/             => bootstrapping with inversion of control
-|   ├── ExpressServer.ts    => start express server configurations
-|   ├── index.js            => boot express, redis and socket.io 
-|   ├── RedisServer.ts      => start redis server configurations
-|   ├── SocketServer.ts     => socket server configurations
-├── responses/           => HTTP responses custom error handler
-|   ├── clientErrors/       => error code between 400 - 499
-|   ├── serverErrors/       => error code 500 and above
-|   ├── successful/         => successful responses
-|   ├── ErrorHandler.ts     => middleware for center point of exception handling
-├── utils/               => utilities for entire project 
-└── server.ts            => entry point of node to start the project 
+    workers/                 => Workers gốc cho các tính toán nặng
+    ├── fourier.cpp          => Kịch bản C++ gốc cho phép biến đổi Fourier
+    ├── fourier.py           => Kịch bản Python gốc cho phép biến đổi Fourier
+    ├── fourier-addon.cc     => Addon gốc cho phép biến đổi Fourier
+    └── fourier-transform-native.js
 
+    playground/              => Sân chơi thử nghiệm cho các tính năng mới
+    ├── addon-testing.js
+    └── sample_fourier_transform.txt 
 ```
 
-*** 
+## Công nghệ sử dụng
 
-Motivation
-==========
-In software development process, several projects may required to perform broadcasting or real time data transfer with WebSocket module. However, it's pretty time and resource consuming for an organization to allow various team to research and develop their own WebSocket module. 
+* **Backend:** Node.js, Express.js, Socket.IO, Redis, C++
+* **
+* **DataVisualization:** apexcharts
 
-Therefore, a Socket API microservices is developed and maintain independently to enabled multiple teams or project to make use of a single service managed by small team of developers with exclusive knowledge on WebSocket. 
+## Cài đặt và chạy dự án
 
-*** 
+1. **Clone dự án:** `git clone https://github.com/duyvu871/btl-xlths.git`
+2. **Cài đặt dependencies:** `npm install`
+3. **Cài đặt addon cho xử lí fourier:** `npm run addon:build`
+4. **Cấu hình:**
+    * Tạo file `.env` trong thư mục `root` của dự án và cấu hình các biến môi trường cần thiết (ví dụ: cổng server, key API, URL Redis...). Tham khảo file `.env.example` để biết danh sách các biến môi trường.
+    * ```dotenv
+      NODE_ENV=development
+      SERVER_PORT=8080 
+      REDIS_HOST=redis
+      REDIS_PORT=6379
 
-Technical Discussion
-====================
+      SAMPLE_PLATFORM_AUDIENCE=1
+      SAMPLE_PLATFORM_PUBLIC_KEY=123123
 
-The project is designed with three-tiers architecture, inversion of controls (IOC) and coherent with SOLID principle to establish a maintainable and extensible codebase for perfective and corrective maintenance.
+      KRAKEN_API_ENDPOINT=https://api.kraken.com/0/public
+      BINANCE_API_ENDPOINT=https://api.binance.com/api/v3
 
-OAuth 2.0 security protocol with password grant is selected to prevent unauthorized access onto the APIs and listen to the Socket.io's URL protocol. The services required public key provided from authorization server to verify the *Signature of Tokens* given by Client or Resource Owner. 
-
-Typescript programming language with ES6 features or above is used to develop the project to increase greater discipline to saturate the codebase with strict type checking, better code structuring and object-oriented programming techniques. 
-
-Docker Compose is use for define and running both Express Server and Redis in-memory database containers to build the service. The compose file consists of development and production version for developers help improve compatibility and standardization of development and production environment.
-
-*** 
-
-Limitation
-==========
-* [ ] Multiple environment (development and production) for Socket Server
-* [ ] Multiple environment (development and production) for Express Server
-* [ ] Test case configuration for Typescript (Jest)
-* [ ] Lack of index.d.ts file for entire project
-
-Getting Started
-===============
-
-Running in Development
-----------------------
-1. Start the development environment with `docker-compose` and verify the running status.
-```docker
-$ docker-compose -f docker-compose.yml up -d
-```
-
-2. Verify the running status
-```docker
-$ docker container ls
-xxxxxxxxxxxx        ts-express-socketio_socket   "docker-entrypoint.s…"   3 minutes ago       Up 3 minutes        0.0.0.0:8080->8080/tcp   ts-express-socketio_socket_1
-xxxxxxxxxxxx        redis:alpine                 "docker-entrypoint.s…"   3 minutes ago       Up 3 minutes        6379/tcp                 ts-express-socketio_redis_1
-``` 
-
-Running in Production
----------------------
-1. Docker Swarm Initialization 
-```docker
-$ docker swarm init --advertise-addr <your ip address>
-```
-
-2. Deploy into Docker Swarm
-```docker
-$ docker stack deploy --compose-file docker-compose.prod.yml socket-with-redis
-```
-
-3. Verify the running status
-```docker
-$ docker service ls
-ID                  NAME                       MODE                REPLICAS            IMAGE                               PORTS
-xxxxxxxxxxxx        socket-with-redis_redis    replicated          1/1                 redis:alpine                        
-xxxxxxxxxxxx        socket-with-redis_socket   global              1/1                 ts-express-socketio_socket:latest   *:8000->8000/tcp
-``` 
-
-Tool and Technologies
-=====================
-1. Linux Ubuntu 20.04 LTS (Focal Fossa) AMD64 Desktop OS
-2. Express Server 4.17.1 
-3. NodeJS v10.19.0 
-4. Typescript v3.8.3
-5. Socket.io v2.3.0
-6. Redis v3.0.2 
-
-About
-=====
-Author
-------
-- Yinghua Chai
-
-License
--------
-This project does not contain any license.
+      LIVE_SESSION_EXPIRE=86400 # 1 day
+    ```
+5. **Chạy server:** `npm start` (trong thư mục `root`)
 
 
+## Sử dụng
+
+1. Truy cập vào giao diện web tại địa chỉ `http://localhost:8080`.
+
+## Đóng góp
+
+Mọi đóng góp đều được hoan nghênh. Vui lòng tạo một pull request để đóng góp.
 
 
+## Liên hệ
+
+Nếu có bất kỳ thắc mắc hoặc đề xuất nào, vui lòng liên hệ qua email: [dubuicp123@gmail.com](dubuicp123@gmail.com)
 
 
+## Giấy phép
 
