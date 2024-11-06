@@ -3,13 +3,16 @@ import Redis from 'ioredis';
 import { Server } from 'http';
 
 import { SocketEvent } from '../common/constants';
+import LiveBitcoinWebsocket from "../websockets/LiveBitcoinWebsocket";
+import RedisServer from "./RedisServer";
 
 class SocketServer {
     private _io: SocketIo.Server;
-    private _redis: Redis;
+    private _redis: RedisServer;
     private _clients: Map<string, SocketIo.Socket> = new Map();
+    private _slaveNamespaces: Map<string, SocketIo.Namespace> = new Map();
 
-    constructor(server: Server, redis: Redis) {
+    constructor(server: Server, redis: RedisServer) {
         this._io = new SocketIo.Server(server, {
             cors: {
                 origin: "*",
@@ -19,6 +22,7 @@ class SocketServer {
         });
         this._redis = redis;
         this.listen();
+        new LiveBitcoinWebsocket(this, this._redis).initialize();
     }
 
     private listen(): void {
@@ -75,8 +79,16 @@ class SocketServer {
         return this._clients;
     }
 
+    setClient(socketId: string, socket: SocketIo.Socket): void {
+        this._clients.set(socketId, socket);
+    }
+
     getClient(socketId: string): SocketIo.Socket | undefined {
         return this._clients.get(socketId);
+    }
+
+    destroyClient(socketId: string): void {
+        this._clients.delete(socketId);
     }
 
     getManyClients(socketIds: string[]): (SocketIo.Socket | undefined)[] {
@@ -91,18 +103,30 @@ class SocketServer {
         this._io.to(room).emit(event, data);
     }
 
-    async joinRoom(socketId: string, room: string): Promise<void> {
+    joinRoom(socketId: string, room: string): void {
         const socket = this.getClient(socketId);
         if (socket) {
             socket.join(room);
         }
     }
 
-    async leaveRoom(socketId: string, room: string): Promise<void> {
+    leaveRoom(socketId: string, room: string): void {
         const socket = this.getClient(socketId);
         if (socket) {
             socket.leave(room);
         }
+    }
+
+    getSlaveNamespace(serverId: string): SocketIo.Namespace | undefined {
+        return this._slaveNamespaces.get(serverId);
+    }
+
+    addSlaveNamespace(serverId: string, server: SocketIo.Namespace): void {
+        this._slaveNamespaces.set(serverId, server);
+    }
+
+    removeSlaveNamespace(serverId: string): void {
+        this._slaveNamespaces.delete(serverId);
     }
 }
 

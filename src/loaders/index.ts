@@ -14,11 +14,11 @@ export default async () => {
     expressServer.initRedis(redisServer);
 
     // start socket 
-    const socketServer = new SocketServer(expressInstance, redisInstance);
+    const socketServer = new SocketServer(expressInstance, redisServer);
     const socketInstance = socketServer.instance;
     expressServer.initSocket(socketInstance);
 
-    const cronjob = new CronJob(socketInstance, redisServer);
+    const cronjob = new CronJob(socketServer, redisServer);
     cronjob.initialize();
 
     process.on('exit', () => {

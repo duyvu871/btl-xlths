@@ -34,6 +34,7 @@ class ExpressServer {
         this._app.use(cors());
         this._app.use('/api/v1', route.apiRoutes);
         this._app.use('/', route.pageRoutes);
+        this._app.use('/statics', express.static('statics'));
         this._app.use('*', routeNotFound);
         this._app.use(errorHandler);
 

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biểu đồ Giá Bitcoin - Giao Diện Tối</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.27.1/apexcharts.min.css">
+    <script src="https://cdn.socket.io/4.8.0/socket.io.min.js" integrity="sha384-OoIbkvzsFFQAG88r+IqMAjyOtYDPGO0cqK5HF5Uosdy/zUEGySeAzytENMDynREd" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.27.1/apexcharts.min.js"></script>
+    <link rel="stylesheet" href="/statics/style.css">
+</head>
+<body>
+<div id="chart-container">
+    <h2>Giá Bitcoin (USD)</h2>
+    <p>Biểu đồ giá phiên <span id="timeframe">1m</span></p>
+    <div id="price-display">$69522.41</div>
+    <div class="py-2"></div>
+    <div id="percentage-change">▲ 3.91%</div>
+    <div class="py-2"></div>
+    <!-- Nút hamburger bên cạnh nút ẩn hiện candlestick -->
+    <div class="flexbox">
+        <button id="update-btn">Cập nhật</button>
+        <button id="candlestick" class="ml-4">
+            <img src="https://scontent.xx.fbcdn.net/v/t1.15752-9/462638866_2123692391398369_7837515212197580849_n.png?stp=dst-png_s480x480&_nc_cat=101&ccb=1-7&_nc_sid=0024fc&_nc_eui2=AeFtw09vNgMEluBULZAonGzUjJArVvkIpryMkCtW-QimvOA30rvSS1VqmozJJp_KbdvJQkjFqEFwvGErrvS-zzwj&_nc_ohc=E9PEHqrtVpIQ7kNvgHJOEpi&_nc_ad=z-m&_nc_cid=0&_nc_zt=23&_nc_ht=scontent.xx&oh=03_Q7cD1QEQqEVGjDGwnvSKoqEnmbOG8yd_egVauQlurgMXOuYamg&oe=67509D66" alt="Candlestick Icon" style="width:20px; height:20px;">
+        </button>
+        <!-- Nút hamburger và menu con -->
+        <div class="hamburger-container ml-4">
+            <button id="timeframe-display">1m</button> <!-- Thay thế nút hamburger bằng tên khung thời gian -->
+            <div id="timeframe-options" class="dropdown-content">
+                <button onclick="selectTimeframe('1s')">1s</button>
+                <button onclick="selectTimeframe('1m')">1m</button>
+                <button onclick="selectTimeframe('3m')">3m</button>
+                <button onclick="selectTimeframe('5m')">5m</button>
+                <button onclick="selectTimeframe('15m')">15m</button>
+                <button onclick="selectTimeframe('30m')">30m</button>
+                <button onclick="selectTimeframe('1h')">1h</button>
+                <button onclick="selectTimeframe('2h')">2h</button>
+                <button onclick="selectTimeframe('4h')">4h</button>
+                <button onclick="selectTimeframe('6h')">6h</button>
+                <button onclick="selectTimeframe('8h')">8h</button>
+                <button onclick="selectTimeframe('12h')">12h</button>
+                <button onclick="selectTimeframe('1d')">1d</button>
+                <button onclick="selectTimeframe('3d')">3d</button>
+                <button onclick="selectTimeframe('1w')">1w</button>
+                <button onclick="selectTimeframe('1M')">1M</button>
+            </div>
+        </div>
+    </div>
+    <div class="py-2"></div>
+    <div id="chart"></div>
+</div>
+
+<script>
+    const API_ENDPOINT = 'http://localhost:8080/api/v1'
+    // Khởi tạo dữ liệu candlestick và các biến liên quan
+    let candlestickData = []; // Sao chép dữ liệu ban đầu
+    let isCandlestickVisible = false;
+
+    // Tạo dữ liệu highLineData và lowLineData
+    let highLineData = []; //candlestickData.map(data => ({ x: data.x, y: data.y[1] }));
+    let closeLineData = [];
+    let interval = '1m';
+
+    let socketIO;
+
+    // Thiết lập biểu đồ
+    const options = {
+        series: [
+            {
+                name: 'Candlestick',
+                type: 'candlestick',
+                data: [] // Ẩn candlestick khi khởi tạo
+            },
+            {
+                name: 'Fourier',
+                type: 'line',
+                data: [],
+                color: '#00ffcc'
+            },
+            {
+                name: 'Close',
+                type: 'line',
+                data: [],
+                color: '#ff6666'
+            }
+        ],
+        chart: {
+            type: 'candlestick',
+            height: 450,
+            background: '#2e2e2e',
+            foreColor: '#e0e0e0',
+            animations: {
+                enabled: true,
+                easing: 'linear',
+                dynamicAnimation: {
+                    speed: 1000
+                }
+            },
+            zoom: {
+                enabled: true,
+                type: 'x',
+                resetIcon: {
+                    offsetX: -10,
+                    offsetY: 0,
+                    fillColor: '#fff',
+                    strokeColor: '#37474F'
+                },
+                selection: {
+                    background: '#90CAF9',
+                    border: '#0D47A1'
+                }
+            }
+        },
+        xaxis: {
+            type: 'datetime',
+            labels: {
+                datetimeUTC: false
+            }
+            // categories: candlestickData.map(data => data.x),
+            // labels: {
+            //     style: {
+            //         colors: '#e0e0e0'
+            //     }
+            // }
+        },
+        yaxis: {
+            title: {
+                text: 'Giá (USD)',
+                style: {
+                    color: '#e0e0e0'
+                }
+            },
+            labels: {
+                formatter: function(value) {
+                    return "$" + value;
+                },
+                style: {
+                    colors: '#e0e0e0'
+                }
+            }
+        },
+        stroke: {
+            // width: [1, 2, 2],
+            curve: 'smooth'
+        },
+        tooltip: {
+            theme: 'dark',
+            y: {
+                formatter: function(value) {
+                    return "$" + value;
+                }
+            },
+            x: {
+                format: 'dd MMM yyyy HH:mm'
+            }
+        },
+        // title: {
+        //     text: 'Giá Bitcoin (USD)',
+        //     align: 'left',
+        //     style: {
+        //         color: '#e0e0e0'
+        //     }
+        // }
+    };
+
+    const chart = new ApexCharts(document.querySelector("#chart"), options);
+    chart.render();
+
+    // Hàm cập nhật highLineData và lowLineData
+    // function updateHighLowLines(l) {
+    //     highLineData = candlestickData.map(data => ({ x: data.x, y: data.y[1] }));
+    // }
+
+    function updateChart() {
+
+        // Cập nhật dữ liệu high và low line
+        // updateHighLowLines();
+
+        // Cập nhật giá hiển thị và phần trăm thay đổi
+        const latestPrice = candlestickData[0].y[3];
+        const previousPrice = candlestickData[1].y[3];
+        const percentageChange = ((latestPrice - previousPrice) / previousPrice * 100).toFixed(2);
+        // closeLineData = candlestickData.map(candle => ({
+        //     x: candle.x,
+        //     y: candle[3]
+        // }))
+        // Cập nhật hiển thị giá và phần trăm thay đổi
+        document.getElementById('price-display').textContent = `$${latestPrice.toFixed(2)}`;
+        document.getElementById('percentage-change').textContent = `${percentageChange >= 0 ? '▲' : '▼'} ${Math.abs(percentageChange)}%`;
+        document.getElementById('percentage-change').style.color = percentageChange >= 0 ? '#00ffcc' : '#ff6666';
+
+        // Cập nhật biểu đồ với dữ liệu mới
+        chart.updateSeries([
+            {
+                name: "Candlestick",
+                data: isCandlestickVisible ? candlestickData : []
+            }, // Chỉ hiển thị nếu isCandlestickVisible là true
+            {
+                name: "Fourier",
+                data: highLineData
+            },
+            {
+                name: 'Close',
+                data: closeLineData
+            }
+        ]);
+    }
+
+    // Xử lý sự kiện khi nhấn nút cập nhật
+    // document.getElementById('update-btn').addEventListener('click', updateChart);
+
+    // Xử lý sự kiện khi nhấn nút "Ẩn hiện" để ẩn hoặc hiện riêng phần candlestick
+    document.getElementById('candlestick').addEventListener('click', () => {
+        isCandlestickVisible = !isCandlestickVisible; // Đổi trạng thái hiển thị của candlestick
+        chart.updateSeries([
+            { data: isCandlestickVisible ? candlestickData : [] }, // Cập nhật hiển thị candlestick
+            { data: highLineData },
+        ]);
+    });
+    // Khởi tạo trạng thái cho các khung thời gian
+    const timeframeState = {
+        '1s': false,
+        '1m': true,  // Khung thời gian mặc định
+        '3m': false,
+        '5m': false,
+        '15m': false,
+        '30m': false,
+        '1h': false,
+        '2h': false,
+        '4h': false,
+        '6h': false,
+        '8h': false,
+        '12h': false,
+        '1d': false,
+        '3d': false,
+        '1w': false,
+        '1M': false,
+    };
+
+    // Hàm để áp dụng thuộc tính CSS cho khung thời gian được chọn
+    function updateTimeframeStyles() {
+        Object.keys(timeframeState).forEach((timeframe) => {
+            const button = document.querySelector(`button[onclick="selectTimeframe('${timeframe}')"]`);
+            if (timeframeState[timeframe]) {
+                button.classList.add('active');
+            } else {
+                button.classList.remove('active');
+            }
+        });
+    }
+
+    // Hàm cập nhật tên khung thời gian đang được chọn
+    function updateActiveTimeframeName() {
+        offEvent(`liveBitcoin:${interval}`);
+        leaveIntervalRoom(interval);
+
+        const activeTimeframe = Object.keys(timeframeState).find((timeframe) => timeframeState[timeframe]);
+        const timeframeButton = document.getElementById('timeframe-display');
+        const timeframeDisplay = document.getElementById('timeframe');
+        timeframeButton.textContent = activeTimeframe;
+        timeframeDisplay.textContent = activeTimeframe;
+
+        interval = activeTimeframe;
+        getCurrentChartData(interval, 'BTCUSDT', 2000);
+        joinIntervalRoom(interval);
+        setupIntervalEvent(interval);
+    }
+
+    // Hàm cập nhật trạng thái của các khung thời gian
+    function selectTimeframe(selectedTimeframe) {
+        Object.keys(timeframeState).forEach((timeframe) => {
+            timeframeState[timeframe] = false;
+        });
+        timeframeState[selectedTimeframe] = true;
+
+        updateTimeframeStyles();
+        updateActiveTimeframeName();  // Cập nhật tên khung thời gian đang chọn
+        // updateChartData(selectedTimeframe);
+    }
+
+    // Hàm cập nhật dữ liệu biểu đồ và hiển thị giá, phần trăm thay đổi dựa trên khung thời gian mới
+    // function updateChartData(timeframe) {
+    //     // Tạo dữ liệu mới ngẫu nhiên cho candlestick, high line, và low line
+    //     const newCandlestickData = candlestickData.map((data) => {
+    //         const open = data.y[0];
+    //         const close = open + (Math.random() - 0.5) * 500;
+    //         const high = Math.max(open, close) + Math.random() * 200;
+    //         const low = Math.min(open, close) - Math.random() * 200;
+    //         return { x: data.x, y: [open, high, low, close] };
+    //     });
+    //
+    //     // Cập nhật lại highLineData và lowLineData từ dữ liệu mới của candlestick
+    //     const newHighLineData = newCandlestickData.map(data => ({ x: data.x, y: data.y[1] }));
+    //     const newLowLineData = newCandlestickData.map(data => ({ x: data.x, y: data.y[2] }));
+    //
+    //     // Cập nhật biến dữ liệu của biểu đồ
+    //     candlestickData = newCandlestickData;
+    //     highLineData = newHighLineData;
+    //     lowLineData = newLowLineData;
+    //
+    //     // Cập nhật hiển thị giá và phần trăm thay đổi
+    //     const latestPrice = newCandlestickData[newCandlestickData.length - 1].y[3];
+    //     const previousPrice = newCandlestickData[newCandlestickData.length - 2].y[3];
+    //     const percentageChange = ((latestPrice - previousPrice) / previousPrice * 100).toFixed(2);
+    //
+    //     // Cập nhật hiển thị giá và phần trăm thay đổi
+    //     document.getElementById('price-display').textContent = `$${latestPrice.toFixed(2)}`;
+    //     document.getElementById('percentage-change').textContent = `${percentageChange >= 0 ? '▲' : '▼'} ${Math.abs(percentageChange)}%`;
+    //     document.getElementById('percentage-change').style.color = percentageChange >= 0 ? '#00ffcc' : '#ff6666';
+    //
+    //     // Cập nhật biểu đồ với dữ liệu mới
+    //     chart.updateSeries([
+    //         { data: isCandlestickVisible ? newCandlestickData : [] },
+    //         { data: newHighLineData },
+    //         { data: newLowLineData }
+    //     ]);
+    // }
+
+    async function getCurrentChartData(interval = '1m', symbol = 'BTCUSDT', limit = 100) {
+        const response = await fetch(`${API_ENDPOINT}/get-historical?interval=${interval}&symbol=${symbol}&limit=${limit}`);
+        const data = await response.json();
+        const candlestick = data.data.candle;
+        const fourier = data.data.line;
+        candlestickData = candlestick.map((item) => ({
+            x: item.time,
+            y: item.data,
+        }));
+        highLineData = fourier.map((item) => ({
+            x: item.time,
+            y: item.data,
+        }));
+        closeLineData = candlestick.map((item) => ({
+            x: item.time,
+            y: item.data[3],
+        }));
+        // updateHighLowLines();
+        updateChart();
+    }
+
+    // Thêm class CSS cho khung thời gian được chọn
+    const style = document.createElement('style');
+    style.innerHTML = `
+            .dropdown-content button.active {
+                background-color: #3a3a3a;
+                color: #00ffcc;
+                font-weight: bold;
+            }
+        `;
+    document.head.appendChild(style);
+
+    // Gọi hàm để thiết lập kiểu dáng ban đầu
+    updateTimeframeStyles();
+    updateActiveTimeframeName(); // Cập nhật tên khung thời gian mặc định là '1m'
+
+    function setupSocketIO() {
+        socketIO = io('http://localhost:8080/socket/live-bitcoin', {
+            transports: ['websocket'],
+            addTrailingSlash: false, // remove trailing slash
+            path: "/socket/socket.io",
+        });
+        socketIO.on('connect', () => {
+            console.log('Connected to server');
+        });
+        socketIO.on('disconnect', () => {
+            console.log('Disconnected from server');
+        });
+        return socketIO;
+    }
+
+    function joinIntervalRoom(interval) {
+        socketIO && socketIO.emit('join', {
+            interval,
+            symbol: 'BTCUSDT',
+        });
+    }
+
+    function leaveIntervalRoom(interval) {
+        socketIO && socketIO.emit('leave', {
+            interval,
+            symbol: 'BTCUSDT',
+        });
+    }
+
+    function offEvent(name) {
+        socketIO && socketIO.off(name);
+    }
+
+    function setupSocketEvent(name, callback) {
+        socketIO && socketIO.on(name, callback);
+    }
+
+    function setupIntervalEvent(interval) {
+        // setupSocketEvent(`liveBitcoin:${interval}`, (data) => {
+        //     const candlestick = data.candle;
+        //     const fourier = data.line;
+        //     candlestickData = candlestick.map((item) => ({
+        //         x: item.time,
+        //         y: item.data,
+        //     }));
+        //     highLineData = fourier.map((item) => ({
+        //         x: item.time,
+        //         y: item.data,
+        //     }));
+        //     updateHighLowLines();
+        //     updateChart();
+        // });
+        setupSocketEvent(`liveBitcoin:${interval}`, (data) => {
+            // const candle = {
+            //     x: data.time,
+            //     y: data.data,
+            // };
+            // candlestickData.push(candle);
+            // updateHighLowLines();
+            // updateChart();
+            console.log(`live bitcoin ${interval}`, data);
+        });
+    }
+
+    function clearSocket() {
+        socketIO && socketIO.disconnect();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        setupSocketIO();
+        joinIntervalRoom(interval);
+        setupIntervalEvent(interval);
+    });
+
+    document.addEventListener('beforeunload', () => {
+        clearSocket();
+    });
+
+</script>
+<script src="/statics/app.js"></script>
+</body>
+</html>

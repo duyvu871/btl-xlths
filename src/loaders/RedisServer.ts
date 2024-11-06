@@ -55,6 +55,24 @@ class RedisServer {
         }
         return this._redis;
     }
+
+    async deleteSessionKeys(keyPattern: string): Promise<void> {
+        try {
+            const keys = await this._redis.keys(keyPattern);
+            if (keys.length > 0) {
+                const deletedCount = await this._redis.eval(
+                    "local count = 0; for _, key in ipairs(redis.call('keys', ARGV[1])) do redis.call('del', key); count = count + 1; end; return count;",
+                    0,
+                    keyPattern
+                );
+                console.log(`Deleted ${deletedCount} keys.`);
+            } else {
+                console.log('No keys found.');
+            }
+        } catch (error) {
+            console.error(`Delete keys pattern ${keyPattern} error:`, error);
+        }
+    }
 }
 
 export default RedisServer;

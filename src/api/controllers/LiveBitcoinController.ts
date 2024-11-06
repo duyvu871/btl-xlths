@@ -1,6 +1,4 @@
-import TodoService from '../services/TodoService';
 import Success from '../../responses/successful/Success';
-import Todo from '../models/Todo';
 import RedisServer from '../../loaders/RedisServer';
 
 import { validator } from '../../utils/validator';
@@ -11,17 +9,18 @@ import LiveBitcoinService, {BinanceHistoricalArgs} from "../services/LiveBitcoin
 
 export const getHistorical = async (req: Request, res: Response) => {
     try {
-        const { interval, symbol } = req.query;
+        const { interval, symbol, limit } = req.query;
         const socket: SocketIO.Server = req.app.get('socket');
         const redis: RedisServer = req.app.get('redis');
         const liveBitcoinService = new LiveBitcoinService(socket, redis);
 
         const candleData = await liveBitcoinService.getHistoricalClient({
             symbol: symbol as string,
-            interval: interval as BinanceHistoricalArgs["interval"]
+            interval: interval as BinanceHistoricalArgs["interval"],
+            limit: 2000,
         });
-        const fourierReadableData = candleData.map((item) => item.close);
-
+        const fourierReadableData = candleData.map((item) => parseFloat(String(item.close)));
+        console.log('fourierReadableData', fourierReadableData);
         const fourierTransform = liveBitcoinService.fourierTransform(fourierReadableData);
 
         const candleVisualData = candleData.map((item) => ({
@@ -33,24 +32,13 @@ export const getHistorical = async (req: Request, res: Response) => {
             time: candleVisualData[index].time,
         }));
         const queryResult = {
-            candle: candleVisualData,
-            line: lineVisualData
+            candle: candleVisualData.slice(0, Number(limit) || 100),
+            line: lineVisualData.slice(0, Number(limit) || 100),
         }
         const successResponse = new Success(queryResult).toJson;
         return res.status(200).json(successResponse);
     } catch (error: any) {
         throw error;
     }
-}
-
-export const list = (req: Request, res: Response) => {
-
-    const socket: SocketIO.Server = req.app.get('socket');
-    const redis: RedisServer = req.app.get('redis');
-    const todoService = new TodoService(socket, redis);
-    const todoLists: Todo[] = todoService.getSampleList();
-
-    const successResponse = new Success(todoLists).toJson;
-    return res.status(200).json(successResponse);
 }
 

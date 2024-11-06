@@ -6,15 +6,15 @@ export function convertCronString(interval: '1s' | '1m' | '3m' | '5m' | '15m' | 
         case 's':
             return `*/${value} * * * * *`; // Every value seconds
         case 'm':
-            return `${0} */${value} * * *`; // At minute 0 past every value minutes.
+            return `${0} */${value} * * * *`; // At minute 0 past every value minutes.
         case 'h':
-            return `${0} 0 */${value} * *`; // At minute 0 past every value hours.
+            return `${0} 0 */${value} * * *`; // At minute 0 past every value hours.
         case 'd':
             return `0 0 */${value} * *`;   // At 00:00 on every value days.
         case 'w':
-            return `0 0 * * ${value}`;    // At 00:00 on value day-of-week (0 - 7) (Sunday=0 or 7) - see below
+            return `0 0 * * ${value} *`;    // At 00:00 on value day-of-week (0 - 7) (Sunday=0 or 7) - see below
         case 'M':
-            return `0 0 1 */${value} *`;   // At 00:00 on day-of-month 1 in every value month(s)  - also approximate
+            return `0 0 1 */${value} * *`;   // At 00:00 on day-of-month 1 in every value month(s)  - also approximate
         default:
             throw new Error(`Invalid interval: ${interval}`);  // Throw error for invalid interval
     }

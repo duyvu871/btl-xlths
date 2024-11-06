@@ -26,20 +26,21 @@ class LiveSessionService {
             pipeline.hmset(key, item);
             pipeline.expire(key, config.liveSessionExpiration);
         });
-
+        console.log(`Saving multiple keys ${sessionKey} with data`, data.length);
         try {
             const results = await pipeline.exec();
+            // console.log("Results:", results);
             if (!results) {
                 throw new BadRequest("400", "Failed to set multiple keys", {
                     message: "Failed to set multiple keys",
                     statusCode: 400
                 });
             }
-            results.forEach((result, index) => {
+            results?.forEach((result, index) => {
                 if (result[0]) {
                     console.error(`Error ${data[index].time}:`, result[0]);
                 } else {
-                    console.log(`Đã lưu key ${data[index].time}`);
+                    // console.log(`Đã lưu key ${data[index].time}`);
                 }
             });
         } catch (error) {
@@ -99,7 +100,7 @@ class LiveSessionService {
             }
             const historical = results.map((result) => result[1]) as unknown as NormalizeHistorical;
             historical.sort((a, b) => b.time - a.time); // Sort by time, descending
-            console.log(`Get multiple keys ${sessionKey} with data`, historical);
+            // console.log(`Get multiple keys ${sessionKey} with data`, historical);
             return historical.slice(0, limit);
         } catch (error) {
             console.error("Failed to get multiple keys:", error);

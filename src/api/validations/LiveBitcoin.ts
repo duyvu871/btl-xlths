@@ -12,11 +12,14 @@ const validateTimezone = (timezone: string) => {
 }
 
 const validateLimit = (limit: number) => {
-    return limit > 0 && limit <= 1000;
+    return limit > 0 && limit <= 2000;
 }
 
 export const historicalParams: ValidationChain[] = [
     commonText(query('interval'))
         .custom(validateInterval).withMessage('invalid interval'),
-    commonText(query('symbol'))
+    commonText(query('symbol')),
+    commonText(query('limit'))
+        .optional()
+        .custom(validateLimit).withMessage('invalid limit'),
 ];

@@ -41,7 +41,17 @@ class LiveBitcoinService {
     getHistoricalClient = async (args: BinanceHistoricalArgs): Promise<NormalizeHistorical> => {
         try {
             const liveSessionService = new LiveSessionService(this.socket, this.redisServer, args.symbol);
-            return await liveSessionService.getMultipleKeys(args.interval, args.symbol, 2000);
+            const allCandles = await liveSessionService.getMultipleKeys(args.interval, args.symbol, args.limit || 500);
+            // redis value is string, so we need to parse it
+            return allCandles.map((item) => ({
+                time: parseInt(String(item.time)),
+                open: parseFloat(String(item.open)),
+                high: parseFloat(String(item.high)),
+                low: parseFloat(String(item.low)),
+                close: parseFloat(String(item.close)),
+                volume: parseFloat(String(item.volume)),
+                count: item.count
+            }));
         } catch (e: any) {
             console.log(e);
             return [];
@@ -121,7 +131,7 @@ class LiveBitcoinService {
         }
     }
 
-    getBinanceHistorical = async (option:BinanceHistoricalArgs) => {
+    getBinanceHistorical = async (option: BinanceHistoricalArgs): Promise<BinanceKline> => {
         const apiEndpoint = config.binanceAPIEndpoint;
         const dataType = "klines";
         const symbol = option.symbol || "BTCUSDT";
@@ -129,11 +139,23 @@ class LiveBitcoinService {
         const limits = (option?.limit && option?.limit > 500) ? separateNumber(option.limit, 500) : [500];
 
         const handleRequestStore = [];
-
+        // get current timestamp with timezone +7
+        let currentTimestamp = new Date().getTime();
         for (let limit of limits) {
-            const startTime = option.startTime || Date.now() - (this.intervalToSeconds(interval) * 1000 * limit);
-            const endTime = option.endTime || Date.now();
-            const timeZone = option.timeZone || "7 (UTC)";
+            let startTime = option.startTime || currentTimestamp - (this.intervalToSeconds(interval) * 1000 * limit);
+            let endTime = option.endTime || currentTimestamp;
+            const timeZone = option.timeZone || "+7:00";
+            currentTimestamp = startTime;
+            // prevent to get data before 2015-01-01
+            if (startTime < 1420070400000) {
+                startTime = 1420070400000;
+            }
+            if (endTime < 1420070400000) {
+                break;
+            }
+
+            console.log(`[${interval}] Start time: ${startTime} ${new Date(startTime).toISOString()}`);
+            console.log(`[${interval}] End time: ${endTime} ${new Date(endTime).toISOString()}`);
 
             const searchParams = new URLSearchParams();
             searchParams.append("symbol", symbol);
@@ -157,26 +179,36 @@ class LiveBitcoinService {
 
             try {
                 handleRequestStore.push(
-                    retryWrapper(async () => axios.request<BinanceKline>(requestConfig), "binance", {
+                    retryWrapper(async () => axios.request<BinanceKline>(requestConfig), `binance-${interval}`, {
                         MAX_RETRY: 3,
                         RETRY_WAIT: 1000,
                         retryIndex: 0,
                         condition: async (response) => {
-                            return response.data.length > 0;
+                            const condition = !!response.data;
+                            if (!condition) {
+                                console.log(response.data)
+                            }
+                            return condition;
                         }
                     }).then((response) => response?.data)
+                        .catch((e: any) => {
+                            console.log(e)
+                        })
                 )
             } catch (e: any) {
                 console.log(e);
                 throw new InternalServerError("500", e.message, "Internal Server Error");
             }
-
-            const parallelHandle = await Promise.all(handleRequestStore);
-
-            return parallelHandle.reduce((acc, curr) => {
-                return (acc || []).concat(curr || []);
-            }, []);
         }
+
+        const parallelHandle = <BinanceKline[]>await Promise.all(handleRequestStore);
+        const data = parallelHandle.filter(Boolean).flat();
+        console.log(`Parallel handle: ${data.length}`);
+        return data;
+    }
+
+    updateBinanceHistorical = async (option: Pick<BinanceHistoricalArgs, "symbol"|"interval">) => {
+
     }
 
     normalizeHistoricalKrakenData = (history: OHLCData[] = []): NormalizeHistorical => {
@@ -205,6 +237,18 @@ class LiveBitcoinService {
                 count: data[8]
             }
         });
+    }
+
+    normalizeBinanceTicker = (ticker: BinanceTicker): NormalizeHistorical[number] => {
+        return {
+            time: ticker.openTime,
+            open: parseFloat(ticker.openPrice),
+            high: parseFloat(ticker.highPrice),
+            low: parseFloat(ticker.lowPrice),
+            close: parseFloat(ticker.lastPrice),
+            volume: parseFloat(ticker.volume),
+            count: ticker.count
+        };
     }
 
     fourierTransform = (data: number[]): number[] => {

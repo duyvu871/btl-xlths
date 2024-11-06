@@ -53,7 +53,6 @@ Dự án này xây dựng một hệ thống xử lý thuật toán cho phép ng
 ## Công nghệ sử dụng
 
 * **Backend:** Node.js, Express.js, Socket.IO, Redis, C++
-* **
 * **DataVisualization:** apexcharts
 
 ## Cài đặt và chạy dự án
