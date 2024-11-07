@@ -99,7 +99,7 @@ class LiveSessionService {
                 });
             }
             const historical = results.map((result) => result[1]) as unknown as NormalizeHistorical;
-            historical.sort((a, b) => b.time - a.time); // Sort by time, descending
+            historical.sort((a, b) => a.time - b.time); // Sort by time, ascending
             // console.log(`Get multiple keys ${sessionKey} with data`, historical);
             return historical.slice(0, limit);
         } catch (error) {
@@ -117,7 +117,7 @@ class LiveSessionService {
         const sessionKey = this.getSessionKey(interval, symbol);
         const searchKey = `${sessionKey}:${key}`;
         try {
-
+            console.log(`Updating hash ${searchKey} with data`, newData);
             await this.redisServer.instance.hmset(searchKey, newData);
             await this.redisServer.instance.expire(searchKey, config.liveSessionExpiration);
         } catch (error) {

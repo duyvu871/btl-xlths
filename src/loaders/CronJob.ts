@@ -1,5 +1,3 @@
-import * as SocketIo from 'socket.io';
-
 import cron from "node-cron"
 import {convertCronString} from "../utils/cron";
 import LiveBitcoinService, {BinanceHistoricalArgs} from "../api/services/LiveBitcoinService";
@@ -7,6 +5,7 @@ import RedisServer from "./RedisServer";
 import LiveSessionService from "../api/services/LiveSessionService";
 import {NormalizeHistorical} from "../@types/LiveBitcoin";
 import SocketServer from "./SocketServer";
+import LiveBitcoinWebsocket from "../websockets/LiveBitcoinWebsocket";
 
 class CronJob {
     private _io: SocketServer;
@@ -20,7 +19,7 @@ class CronJob {
         this._redis = _redis;
         this._cronLabel = ['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w', '1M'];
         this._availableIntervals = ['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d'];
-        this._cronUpdateInterval = '5s';
+        this._cronUpdateInterval = '1s';
     }
 
     public initialize(): void {
@@ -42,7 +41,7 @@ class CronJob {
 
         const liveBitcoinService = new LiveBitcoinService(this._io.instance, this._redis);
         const liveSessionService = new LiveSessionService(this._io.instance, this._redis, 'BTCUSDT');
-        const liveBitcoinNameSpace = this._io.getSlaveNamespace(LiveBitcoinService.name);
+        const liveBitcoinNameSpace = this._io.getSlaveNamespace(LiveBitcoinWebsocket.name);
 
         console.log('Registering Live Bitcoin Cron Jobs');
         const labels = this._cronLabel;
@@ -63,7 +62,23 @@ class CronJob {
                             'BTCUSDT',
                             String(currentSymbolTicker.openTime),
                             normalizedData);
-                        // console.log(currentSymbolTicker);
+
+                        // Fourier Transform
+                        const candleData = await liveBitcoinService.getHistoricalClient({
+                            symbol: 'BTCUSDT' as string,
+                            interval: label as BinanceHistoricalArgs["interval"],
+                            limit: 2000,
+                        });
+                        const fourierReadableData = candleData.map((item) =>
+                            parseFloat(String(item.close)));
+                        const fourierTransform = liveBitcoinService.fourierTransform(fourierReadableData);
+                        const fourierTransformData = fourierTransform.map((item, index) => ({
+                            data: item,
+                            time: candleData[index].time,
+                        }));
+
+                        liveBitcoinNameSpace && liveBitcoinNameSpace.to(`BTCUSDT:${label}`).emit(`fourier:${label}`, fourierTransformData);
+                        console.log(`Emitting fourier:${label} to BTCUSDT:${label}`);
                     } catch (error) {
                         console.error('Error in Live Bitcoin Cron Job', error);
                     }
@@ -112,16 +127,6 @@ class CronJob {
                             // console.log('currentSymbolTicker', currentSymbolTicker.lastPrice);
                             // console.log('liveBitcoinNameSpace', LiveBitcoinService.name);
                             try {
-                                this._io.instance.emit(`liveBitcoin:${labels[index]}`, {
-                                    data: [
-                                        currentSymbolTicker.openPrice,
-                                        currentSymbolTicker.highPrice,
-                                        currentSymbolTicker.lowPrice,
-                                        currentSymbolTicker.lastPrice
-                                    ].map(parseFloat),
-                                    time: currentSymbolTicker.openTime,
-                                    close: currentSymbolTicker.closeTime,
-                                })
                                 liveBitcoinNameSpace && liveBitcoinNameSpace.to(`BTCUSDT:${labels[index]}`).emit(`liveBitcoin:${labels[index]}`, {
                                     data: [
                                         currentSymbolTicker.openPrice,
@@ -132,6 +137,7 @@ class CronJob {
                                     time: currentSymbolTicker.openTime,
                                     close: currentSymbolTicker.closeTime,
                                 });
+                                console.log(`Emitting liveBitcoin:${labels[index]} to BTCUSDT:${labels[index]}`);
                             } catch (e: any) {
                                 console.error('Error in Live Bitcoin Cron Job', e);
                             }

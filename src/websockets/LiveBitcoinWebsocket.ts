@@ -43,6 +43,7 @@ class LiveBitcoinWebsocket {
         const liveBitcoinNamespace =  this.socket.instance.of('/socket/live-bitcoin');
         // Add the namespace to the socket server store
         this.socket.addSlaveNamespace(this.name, liveBitcoinNamespace);
+        console.log('slave namespaces', this.name);
 
         liveBitcoinNamespace.on(SocketEvent.CONNECT, (socket) => {
             const clientId = this.getClientId(socket.id);

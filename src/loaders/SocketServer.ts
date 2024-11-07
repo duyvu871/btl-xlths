@@ -1,5 +1,4 @@
 import * as SocketIo from 'socket.io';
-import Redis from 'ioredis';
 import { Server } from 'http';
 
 import { SocketEvent } from '../common/constants';
@@ -51,7 +50,6 @@ class SocketServer {
             console.log('Running Socket Server is listening.');
         }
     }
-
 
     public async close(): Promise<void> {
         try {

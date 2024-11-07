@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biểu đồ Giá Bitcoin - Giao Diện Tối</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.27.1/apexcharts.min.css">
+<!--    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.27.1/apexcharts.min.css">-->
     <script src="https://cdn.socket.io/4.8.0/socket.io.min.js" integrity="sha384-OoIbkvzsFFQAG88r+IqMAjyOtYDPGO0cqK5HF5Uosdy/zUEGySeAzytENMDynREd" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.27.1/apexcharts.min.js"></script>
+<!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.27.1/apexcharts.min.js"></script>-->
+    <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.1/dist/lightweight-charts.standalone.development.min.js"></script>
     <link rel="stylesheet" href="/statics/style.css">
 </head>
 <body>
@@ -19,32 +20,40 @@
     <div class="py-2"></div>
     <!-- Nút hamburger bên cạnh nút ẩn hiện candlestick -->
     <div class="flexbox">
-        <button id="update-btn">Cập nhật</button>
-        <button id="candlestick" class="ml-4">
-            <img src="https://scontent.xx.fbcdn.net/v/t1.15752-9/462638866_2123692391398369_7837515212197580849_n.png?stp=dst-png_s480x480&_nc_cat=101&ccb=1-7&_nc_sid=0024fc&_nc_eui2=AeFtw09vNgMEluBULZAonGzUjJArVvkIpryMkCtW-QimvOA30rvSS1VqmozJJp_KbdvJQkjFqEFwvGErrvS-zzwj&_nc_ohc=E9PEHqrtVpIQ7kNvgHJOEpi&_nc_ad=z-m&_nc_cid=0&_nc_zt=23&_nc_ht=scontent.xx&oh=03_Q7cD1QEQqEVGjDGwnvSKoqEnmbOG8yd_egVauQlurgMXOuYamg&oe=67509D66" alt="Candlestick Icon" style="width:20px; height:20px;">
-        </button>
-        <!-- Nút hamburger và menu con -->
-        <div class="hamburger-container ml-4">
-            <button id="timeframe-display">1m</button> <!-- Thay thế nút hamburger bằng tên khung thời gian -->
-            <div id="timeframe-options" class="dropdown-content">
-                <button onclick="selectTimeframe('1s')">1s</button>
-                <button onclick="selectTimeframe('1m')">1m</button>
-                <button onclick="selectTimeframe('3m')">3m</button>
-                <button onclick="selectTimeframe('5m')">5m</button>
-                <button onclick="selectTimeframe('15m')">15m</button>
-                <button onclick="selectTimeframe('30m')">30m</button>
-                <button onclick="selectTimeframe('1h')">1h</button>
-                <button onclick="selectTimeframe('2h')">2h</button>
-                <button onclick="selectTimeframe('4h')">4h</button>
-                <button onclick="selectTimeframe('6h')">6h</button>
-                <button onclick="selectTimeframe('8h')">8h</button>
-                <button onclick="selectTimeframe('12h')">12h</button>
-                <button onclick="selectTimeframe('1d')">1d</button>
-                <button onclick="selectTimeframe('3d')">3d</button>
-                <button onclick="selectTimeframe('1w')">1w</button>
-                <button onclick="selectTimeframe('1M')">1M</button>
-            </div>
-        </div>
+       <div class="flexbox">
+           <button id="candlestick" class="ml-4">
+               <img src="/statics/svgviewer-output.svg" alt="Candlestick Icon" style="width:20px; height:20px;">
+           </button>
+           <button id="close-toggle" class="ml-4">
+               <span>Close Time</span>
+           </button>
+           <button id="fourier-toggle" class="ml-4">
+               <span>fourier</span>
+           </button>
+           <!-- Nút hamburger và menu con -->
+           <div class="hamburger-container ml-4">
+               <button id="timeframe-display">1m</button> <!-- Thay thế nút hamburger bằng tên khung thời gian -->
+               <div id="timeframe-options" class="dropdown-content">
+                   <button onclick="selectTimeframe('1s')">1s</button>
+                   <button onclick="selectTimeframe('1m')">1m</button>
+                   <button onclick="selectTimeframe('3m')">3m</button>
+                   <button onclick="selectTimeframe('5m')">5m</button>
+                   <button onclick="selectTimeframe('15m')">15m</button>
+                   <button onclick="selectTimeframe('30m')">30m</button>
+                   <button onclick="selectTimeframe('1h')">1h</button>
+                   <button onclick="selectTimeframe('2h')">2h</button>
+                   <button onclick="selectTimeframe('4h')">4h</button>
+                   <button onclick="selectTimeframe('6h')">6h</button>
+                   <button onclick="selectTimeframe('8h')">8h</button>
+                   <button onclick="selectTimeframe('12h')">12h</button>
+                   <button onclick="selectTimeframe('1d')">1d</button>
+                   <button onclick="selectTimeframe('3d')">3d</button>
+                   <button onclick="selectTimeframe('1w')">1w</button>
+                   <button onclick="selectTimeframe('1M')">1M</button>
+               </div>
+           </div>
+       </div>
+        <div>còn lại: <span id="remaining"></span></div>
     </div>
     <div class="py-2"></div>
     <div id="chart"></div>
@@ -53,170 +62,176 @@
 <script>
     const API_ENDPOINT = 'http://localhost:8080/api/v1'
     // Khởi tạo dữ liệu candlestick và các biến liên quan
-    let candlestickData = []; // Sao chép dữ liệu ban đầu
+
     let isCandlestickVisible = false;
+    let isCloseVisible = true;
+    let isFourierVisible = true;
 
     // Tạo dữ liệu highLineData và lowLineData
+    let candlestickData = []; // Sao chép dữ liệu ban đầu
     let highLineData = []; //candlestickData.map(data => ({ x: data.x, y: data.y[1] }));
     let closeLineData = [];
     let interval = '1m';
 
     let socketIO;
-
-    // Thiết lập biểu đồ
-    const options = {
-        series: [
-            {
-                name: 'Candlestick',
-                type: 'candlestick',
-                data: [] // Ẩn candlestick khi khởi tạo
-            },
-            {
-                name: 'Fourier',
-                type: 'line',
-                data: [],
-                color: '#00ffcc'
-            },
-            {
-                name: 'Close',
-                type: 'line',
-                data: [],
-                color: '#ff6666'
-            }
-        ],
-        chart: {
-            type: 'candlestick',
-            height: 450,
-            background: '#2e2e2e',
-            foreColor: '#e0e0e0',
-            animations: {
-                enabled: true,
-                easing: 'linear',
-                dynamicAnimation: {
-                    speed: 1000
-                }
-            },
-            zoom: {
-                enabled: true,
-                type: 'x',
-                resetIcon: {
-                    offsetX: -10,
-                    offsetY: 0,
-                    fillColor: '#fff',
-                    strokeColor: '#37474F'
-                },
-                selection: {
-                    background: '#90CAF9',
-                    border: '#0D47A1'
-                }
-            }
-        },
-        xaxis: {
-            type: 'datetime',
-            labels: {
-                datetimeUTC: false
-            }
-            // categories: candlestickData.map(data => data.x),
-            // labels: {
-            //     style: {
-            //         colors: '#e0e0e0'
-            //     }
-            // }
-        },
-        yaxis: {
-            title: {
-                text: 'Giá (USD)',
-                style: {
-                    color: '#e0e0e0'
-                }
-            },
-            labels: {
-                formatter: function(value) {
-                    return "$" + value;
-                },
-                style: {
-                    colors: '#e0e0e0'
-                }
-            }
-        },
-        stroke: {
-            // width: [1, 2, 2],
-            curve: 'smooth'
-        },
-        tooltip: {
-            theme: 'dark',
-            y: {
-                formatter: function(value) {
-                    return "$" + value;
-                }
-            },
-            x: {
-                format: 'dd MMM yyyy HH:mm'
-            }
-        },
-        // title: {
-        //     text: 'Giá Bitcoin (USD)',
-        //     align: 'left',
-        //     style: {
-        //         color: '#e0e0e0'
-        //     }
-        // }
+    let currentBar = {
+        open: null,
+        high: null,
+        low: null,
+        close: null,
+        time: new Date().getTime(),
     };
+    const chartOptions = {
+        autoSize: true,
+        layout: {
+            textColor: '#fafafa',
+            background: {
+                type: 'solid',
+                color: '#1e1e1e'
+            }
+        },
+        grid: {
+            vertLines: { color: '#444' },
+            horzLines: { color: '#444' },
+        },
+        priceScale: {
+            position: 'left',
+            mode: 1,
+            // autoScale: true,
+            invertScale: true,
+            alignLabels: true,
+            borderVisible: true,
+            borderColor: '#24273E',
+            scaleMargins: {
+                top: 0.30,
+                bottom: 0.30,
+            },
+        },
+        timeScale: {
+            rightOffset: 50,
+            barSpacing: 10,
+            fixLeftEdge: true,
+            lockVisibleTimeRangeOnResize: true,
+            rightBarStaysOnScroll: true,
+            borderVisible: true,
+            borderColor: '#fff000',
+            visible: true,
+            timeVisible: true,
+            // secondsVisible: true,
+        },
+        crosshair: {
+            mode: LightweightCharts.CrosshairMode.Normal,
+        },
+        localization: {
+            // timeFormatter: businessDayOrTimestamp => {
+            //     return Date(businessDayOrTimestamp); //or whatever JS formatting you want here
+            // },
+            locale: 'vi-VN'
+        },
+    };
+    const chart = LightweightCharts.createChart(document.querySelector('#chart'), {
+        width: 1000,
+        height: 450,
+        ...chartOptions
+    });
+    const fourierSeries = chart.addLineSeries({
+        lineColor: '#2962FF',
+        topColor: '#2962FF',
+        bottomColor: 'rgba(41, 98, 255, 0.28)',
+        lineType: 2,
+        lineWidth: 1,
+    });
 
-    const chart = new ApexCharts(document.querySelector("#chart"), options);
-    chart.render();
+    const closeSeries = chart.addLineSeries({
+        lineColor: '#FF6E40',
+        topColor: '#FF6E40',
+        lineWidth: 1,
+    });
 
-    // Hàm cập nhật highLineData và lowLineData
-    // function updateHighLowLines(l) {
-    //     highLineData = candlestickData.map(data => ({ x: data.x, y: data.y[1] }));
-    // }
+    const candlestickSeries = chart.addCandlestickSeries({
+        upColor: '#26a69a', downColor: '#ef5350', borderVisible: false,
+        wickUpColor: '#26a69a', wickDownColor: '#ef5350',
+    });
+    chart.timeScale().fitContent();
+
+    function mergeTickToBar(data, time) {
+        currentBar.time = time;
+        currentBar.open = data[0];
+        currentBar.high = data[1];
+        currentBar.low = data[2];
+        currentBar.close = data[3];
+
+        const filterCandle = candlestickData.find((item) => item.time === currentBar.time);
+        if (!filterCandle) {
+            candlestickData.push({ ...currentBar });
+        } else {
+            candlestickData.map((item) => {
+                if (item.time === currentBar.time) {
+                    item.open = currentBar.open;
+                    item.high = currentBar.high;
+                    item.low = currentBar.low;
+                    item.close = currentBar.close;
+                }
+            });
+        }
+        const filterClose = closeLineData.find((item) => item.time === currentBar.time);
+        if (!filterClose) {
+            closeLineData.push({ time: currentBar.time, value: currentBar.close });
+        } else {
+            closeLineData.map((item) => {
+                if (item.time === currentBar.time) {
+                    item.value = currentBar.close;
+                }
+            });
+        }
+        console.log('currentBar', currentBar);
+        isCloseVisible && closeSeries.update({
+            time: currentBar.time,
+            value: currentBar.close,
+        });
+        isCandlestickVisible && candlestickSeries.update(currentBar);
+    }
 
     function updateChart() {
-
         // Cập nhật dữ liệu high và low line
-        // updateHighLowLines();
+        updatePriceDisplay();
 
-        // Cập nhật giá hiển thị và phần trăm thay đổi
-        const latestPrice = candlestickData[0].y[3];
-        const previousPrice = candlestickData[1].y[3];
+        // Cập nhật biểu đồ với dữ liệu mới
+        candlestickSeries.setData(isCandlestickVisible ? candlestickData : []);
+        fourierSeries.setData(isFourierVisible ? highLineData : []);
+        closeSeries.setData(isCloseVisible ? closeLineData: []);
+    }
+
+    function updatePriceDisplay(latestPrice, previousPrice) {
+        latestPrice = latestPrice || candlestickData[candlestickData.length - 1].close;
+        previousPrice = previousPrice || candlestickData[candlestickData.length - 2].close;
         const percentageChange = ((latestPrice - previousPrice) / previousPrice * 100).toFixed(2);
-        // closeLineData = candlestickData.map(candle => ({
-        //     x: candle.x,
-        //     y: candle[3]
-        // }))
-        // Cập nhật hiển thị giá và phần trăm thay đổi
+
         document.getElementById('price-display').textContent = `$${latestPrice.toFixed(2)}`;
         document.getElementById('percentage-change').textContent = `${percentageChange >= 0 ? '▲' : '▼'} ${Math.abs(percentageChange)}%`;
         document.getElementById('percentage-change').style.color = percentageChange >= 0 ? '#00ffcc' : '#ff6666';
-
-        // Cập nhật biểu đồ với dữ liệu mới
-        chart.updateSeries([
-            {
-                name: "Candlestick",
-                data: isCandlestickVisible ? candlestickData : []
-            }, // Chỉ hiển thị nếu isCandlestickVisible là true
-            {
-                name: "Fourier",
-                data: highLineData
-            },
-            {
-                name: 'Close',
-                data: closeLineData
-            }
-        ]);
     }
 
-    // Xử lý sự kiện khi nhấn nút cập nhật
-    // document.getElementById('update-btn').addEventListener('click', updateChart);
-
     // Xử lý sự kiện khi nhấn nút "Ẩn hiện" để ẩn hoặc hiện riêng phần candlestick
-    document.getElementById('candlestick').addEventListener('click', () => {
+    document.getElementById('candlestick').addEventListener('click', toggleCandlestick);
+    document.getElementById('close-toggle').addEventListener('click', toggleClose);
+    document.getElementById('fourier-toggle').addEventListener('click', toggleFourier);
+
+    function toggleFourier() {
+        isFourierVisible = !isFourierVisible; // Đổi trạng thái hiển thị của high line
+        fourierSeries.setData(isFourierVisible ? highLineData : []);
+    }
+
+    function toggleClose() {
+        isCloseVisible = !isCloseVisible; // Đổi trạng thái hiển thị của close line
+        closeSeries.setData(isCloseVisible ? closeLineData : []);
+    }
+
+    function toggleCandlestick() {
         isCandlestickVisible = !isCandlestickVisible; // Đổi trạng thái hiển thị của candlestick
-        chart.updateSeries([
-            { data: isCandlestickVisible ? candlestickData : [] }, // Cập nhật hiển thị candlestick
-            { data: highLineData },
-        ]);
-    });
+        candlestickSeries.setData(isCandlestickVisible ? candlestickData : []);
+    }
+
     // Khởi tạo trạng thái cho các khung thời gian
     const timeframeState = {
         '1s': false,
@@ -252,6 +267,7 @@
     // Hàm cập nhật tên khung thời gian đang được chọn
     function updateActiveTimeframeName() {
         offEvent(`liveBitcoin:${interval}`);
+        offEvent(`fourier:${interval}`);
         leaveIntervalRoom(interval);
 
         const activeTimeframe = Object.keys(timeframeState).find((timeframe) => timeframeState[timeframe]);
@@ -261,9 +277,10 @@
         timeframeDisplay.textContent = activeTimeframe;
 
         interval = activeTimeframe;
-        getCurrentChartData(interval, 'BTCUSDT', 2000);
-        joinIntervalRoom(interval);
-        setupIntervalEvent(interval);
+        getCurrentChartData(interval, 'BTCUSDT', 2000).then(() => {
+            joinIntervalRoom(interval);
+            setupIntervalEvent(interval);
+        });
     }
 
     // Hàm cập nhật trạng thái của các khung thời gian
@@ -278,63 +295,34 @@
         // updateChartData(selectedTimeframe);
     }
 
-    // Hàm cập nhật dữ liệu biểu đồ và hiển thị giá, phần trăm thay đổi dựa trên khung thời gian mới
-    // function updateChartData(timeframe) {
-    //     // Tạo dữ liệu mới ngẫu nhiên cho candlestick, high line, và low line
-    //     const newCandlestickData = candlestickData.map((data) => {
-    //         const open = data.y[0];
-    //         const close = open + (Math.random() - 0.5) * 500;
-    //         const high = Math.max(open, close) + Math.random() * 200;
-    //         const low = Math.min(open, close) - Math.random() * 200;
-    //         return { x: data.x, y: [open, high, low, close] };
-    //     });
-    //
-    //     // Cập nhật lại highLineData và lowLineData từ dữ liệu mới của candlestick
-    //     const newHighLineData = newCandlestickData.map(data => ({ x: data.x, y: data.y[1] }));
-    //     const newLowLineData = newCandlestickData.map(data => ({ x: data.x, y: data.y[2] }));
-    //
-    //     // Cập nhật biến dữ liệu của biểu đồ
-    //     candlestickData = newCandlestickData;
-    //     highLineData = newHighLineData;
-    //     lowLineData = newLowLineData;
-    //
-    //     // Cập nhật hiển thị giá và phần trăm thay đổi
-    //     const latestPrice = newCandlestickData[newCandlestickData.length - 1].y[3];
-    //     const previousPrice = newCandlestickData[newCandlestickData.length - 2].y[3];
-    //     const percentageChange = ((latestPrice - previousPrice) / previousPrice * 100).toFixed(2);
-    //
-    //     // Cập nhật hiển thị giá và phần trăm thay đổi
-    //     document.getElementById('price-display').textContent = `$${latestPrice.toFixed(2)}`;
-    //     document.getElementById('percentage-change').textContent = `${percentageChange >= 0 ? '▲' : '▼'} ${Math.abs(percentageChange)}%`;
-    //     document.getElementById('percentage-change').style.color = percentageChange >= 0 ? '#00ffcc' : '#ff6666';
-    //
-    //     // Cập nhật biểu đồ với dữ liệu mới
-    //     chart.updateSeries([
-    //         { data: isCandlestickVisible ? newCandlestickData : [] },
-    //         { data: newHighLineData },
-    //         { data: newLowLineData }
-    //     ]);
-    // }
-
     async function getCurrentChartData(interval = '1m', symbol = 'BTCUSDT', limit = 100) {
         const response = await fetch(`${API_ENDPOINT}/get-historical?interval=${interval}&symbol=${symbol}&limit=${limit}`);
         const data = await response.json();
         const candlestick = data.data.candle;
         const fourier = data.data.line;
+
         candlestickData = candlestick.map((item) => ({
-            x: item.time,
-            y: item.data,
+            time: item.time / 1000,
+            open: item.data[0],
+            high: item.data[1],
+            low: item.data[2],
+            close: item.data[3],
         }));
         highLineData = fourier.map((item) => ({
-            x: item.time,
-            y: item.data,
+            time: item.time / 1000,
+            value: item.data,
         }));
         closeLineData = candlestick.map((item) => ({
-            x: item.time,
-            y: item.data[3],
+            time: item.time / 1000,
+            value: item.data[3],
         }));
         // updateHighLowLines();
         updateChart();
+    }
+
+    function timeToTz(originalTime, timeZone) {
+        const zonedDate = new Date(new Date(originalTime * 1000).toLocaleString('vi-VN', { timeZone }));
+        return zonedDate.getTime() / 1000;
     }
 
     // Thêm class CSS cho khung thời gian được chọn
@@ -347,10 +335,6 @@
             }
         `;
     document.head.appendChild(style);
-
-    // Gọi hàm để thiết lập kiểu dáng ban đầu
-    updateTimeframeStyles();
-    updateActiveTimeframeName(); // Cập nhật tên khung thời gian mặc định là '1m'
 
     function setupSocketIO() {
         socketIO = io('http://localhost:8080/socket/live-bitcoin', {
@@ -386,33 +370,21 @@
     }
 
     function setupSocketEvent(name, callback) {
+        console.log('setupSocketEvent', name);
         socketIO && socketIO.on(name, callback);
     }
 
     function setupIntervalEvent(interval) {
-        // setupSocketEvent(`liveBitcoin:${interval}`, (data) => {
-        //     const candlestick = data.candle;
-        //     const fourier = data.line;
-        //     candlestickData = candlestick.map((item) => ({
-        //         x: item.time,
-        //         y: item.data,
-        //     }));
-        //     highLineData = fourier.map((item) => ({
-        //         x: item.time,
-        //         y: item.data,
-        //     }));
-        //     updateHighLowLines();
-        //     updateChart();
-        // });
+        setupSocketEvent(`fourier:${interval}`, (data) => {
+            highLineData = data.map((item) => ({
+                time: item.time / 1000,
+                value: item.data,
+            }));
+            fourierSeries.setData(highLineData);
+        });
         setupSocketEvent(`liveBitcoin:${interval}`, (data) => {
-            // const candle = {
-            //     x: data.time,
-            //     y: data.data,
-            // };
-            // candlestickData.push(candle);
-            // updateHighLowLines();
-            // updateChart();
-            console.log(`live bitcoin ${interval}`, data);
+            updatePriceDisplay(data.data[3], candlestickData[candlestickData.length - 2].close);
+            mergeTickToBar(data.data, data.time / 1000);
         });
     }
 
@@ -424,6 +396,9 @@
         setupSocketIO();
         joinIntervalRoom(interval);
         setupIntervalEvent(interval);
+        // Gọi hàm để thiết lập kiểu dáng ban đầu
+        updateTimeframeStyles();
+        updateActiveTimeframeName(); // Cập nhật tên khung thời gian mặc định là '1m'
     });
 
     document.addEventListener('beforeunload', () => {

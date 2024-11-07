@@ -19,7 +19,7 @@
     "build": "tsc && tsc-alias",
     "addon:build": "node-gyp rebuild",
     "addon:build:prod": "node-gyp rebuild --gypfile=binding.prod.gyp",
-    "prod": "NODE_ENV=production && node ./dist/server.js"
+    "prod": "NODE_ENV=production && node dist/src/server.js"
   },
   "gypfile": true,
   "dependencies": {

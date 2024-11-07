@@ -5,32 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f9de2608-c9fe-48c4-843b-631cbc26592f" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/websockets/LiveBitcoinWebsocket.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/statics/style.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/views/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.env.example" beforeDir="false" afterPath="$PROJECT_DIR$/.env.example" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/playground/addon-testing.js" beforeDir="false" afterPath="$PROJECT_DIR$/playground/addon-testing.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/controllers/LiveBitcoinController.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/controllers/LiveBitcoinController.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/controllers/TodoController.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/models/Todo.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/models/TodoList.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/routes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/routes.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/services/LiveBitcoinService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/services/LiveBitcoinService.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/api/services/LiveSessionService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/services/LiveSessionService.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/services/TodoService.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/validations/LiveBitcoin.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/validations/LiveBitcoin.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/validations/Todo.ts" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/loaders/CronJob.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/loaders/CronJob.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/loaders/ExpressServer.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/loaders/ExpressServer.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/loaders/RedisServer.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/loaders/RedisServer.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/loaders/SocketServer.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/loaders/SocketServer.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/loaders/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/loaders/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils/cron.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/cron.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/statics/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/statics/app.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/statics/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/workers/fourier-addon.cc" beforeDir="false" afterPath="$PROJECT_DIR$/workers/fourier-addon.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/websockets/LiveBitcoinWebsocket.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/websockets/LiveBitcoinWebsocket.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/views/index.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -186,7 +169,7 @@
       <workItem from="1730575482676" duration="27675000" />
       <workItem from="1730716728979" duration="33081000" />
       <workItem from="1730768965339" duration="22466000" />
-      <workItem from="1730829842720" duration="34167000" />
+      <workItem from="1730829842720" duration="66361000" />
     </task>
     <servers />
   </component>
