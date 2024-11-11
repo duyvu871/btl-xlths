@@ -5,15 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f9de2608-c9fe-48c4-843b-631cbc26592f" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.env.example" beforeDir="false" afterPath="$PROJECT_DIR$/.env.example" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.github/workflows/ci-cd.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/__tests__/LiveSessionService.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/jest.config.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/services/LiveSessionService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/services/LiveSessionService.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/loaders/CronJob.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/loaders/CronJob.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/loaders/SocketServer.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/loaders/SocketServer.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/websockets/LiveBitcoinWebsocket.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/websockets/LiveBitcoinWebsocket.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/views/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/views/index.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,8 +22,8 @@
       <list>
         <option value="HTML File" />
         <option value="package.json" />
-        <option value="JavaScript File" />
         <option value="TypeScript File" />
+        <option value="JavaScript File" />
       </list>
     </option>
   </component>
@@ -39,12 +36,12 @@
     &quot;assignee&quot;: &quot;duyvu871&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "git@github.com:duyvu871/btl-xlths.git",
-    "accountId": "b05e8437-696c-41ae-a090-03267733e280"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;git@github.com:duyvu871/btl-xlths.git&quot;,
+    &quot;accountId&quot;: &quot;b05e8437-696c-41ae-a090-03267733e280&quot;
   }
-}]]></component>
+}</component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="DEPENDENCY_CHECKER_PROBLEMS_TAB" />
   </component>
@@ -56,32 +53,32 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "DefaultHtmlFileTemplate": "HTML File",
-    "Node.js.addon-testing.js.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
-    "ignore.virus.scanning.warn.message": "true",
-    "javascript.nodejs.core.library.configured.version": "20.16.0",
-    "javascript.nodejs.core.library.typings.version": "20.16.15",
-    "last_opened_file_path": "F:/CODE/btl-xlths",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "npm.addon:build.executor": "Run",
-    "npm.build (1).executor": "Run",
-    "npm.build.executor": "Run",
-    "npm.clean.executor": "Run",
-    "npm.dev.executor": "Run",
-    "npm.postinstall.executor": "Run",
-    "settings.editor.selected.configurable": "preferences.general",
-    "ts.external.directory.path": "F:\\CODE\\btl-xlths\\node_modules\\typescript\\lib",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;Node.js.addon-testing.js.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;javascript.nodejs.core.library.configured.version&quot;: &quot;20.16.0&quot;,
+    &quot;javascript.nodejs.core.library.typings.version&quot;: &quot;20.16.15&quot;,
+    &quot;last_opened_file_path&quot;: &quot;F:/CODE/btl-xlths&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;npm.addon:build.executor&quot;: &quot;Run&quot;,
+    &quot;npm.build (1).executor&quot;: &quot;Run&quot;,
+    &quot;npm.build.executor&quot;: &quot;Run&quot;,
+    &quot;npm.clean.executor&quot;: &quot;Run&quot;,
+    &quot;npm.dev.executor&quot;: &quot;Run&quot;,
+    &quot;npm.postinstall.executor&quot;: &quot;Run&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.general&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;F:\\CODE\\btl-xlths\\node_modules\\typescript\\lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="F:\CODE\btl-xlths" />
@@ -169,7 +166,11 @@
       <workItem from="1730575482676" duration="27675000" />
       <workItem from="1730716728979" duration="33081000" />
       <workItem from="1730768965339" duration="22466000" />
-      <workItem from="1730829842720" duration="66361000" />
+      <workItem from="1730829842720" duration="70595000" />
+      <workItem from="1731030693728" duration="664000" />
+      <workItem from="1731031830508" duration="148000" />
+      <workItem from="1731031995619" duration="2845000" />
+      <workItem from="1731175735386" duration="1491000" />
     </task>
     <servers />
   </component>

@@ -19,7 +19,8 @@
     "build": "tsc && tsc-alias",
     "addon:build": "node-gyp rebuild",
     "addon:build:prod": "node-gyp rebuild --gypfile=binding.prod.gyp",
-    "prod": "NODE_ENV=production && node dist/src/server.js"
+    "prod": "NODE_ENV=production && node dist/src/server.js",
+    "test": "jest"
   },
   "gypfile": true,
   "dependencies": {
@@ -48,11 +49,14 @@
     "@types/crypto-js": "^3.1.44",
     "@types/express": "^4.17.6",
     "@types/ioredis": "^5.0.0",
+    "@types/jest": "^29.5.14",
     "@types/jsonwebtoken": "^8.3.9",
     "@types/jwt-decode": "^2.2.1",
     "@types/node-cron": "^3.0.11",
     "@types/socket.io": "^2.1.4",
     "@types/uuid": "^10.0.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
     "tsc-alias": "^1.8.10",
     "tsup": "^8.3.5",
     "typescript": "^5.3.3"
